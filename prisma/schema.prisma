@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Business {
+  id           String   @id @default(cuid())
+  ownerUserId  String?
+  name         String
+  slug         String   @unique
+  industry     String
+  city         String
+  state        String?
+  phone        String?
+  email        String
+  tone         String   @default("professional")
+  description  String?
+  subdomain    String?  @unique
+  customDomain String?  @unique
+  domainStatus String   @default("not_configured")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  services       Service[]
+  sites          Site[]
+  leads          Lead[]
+  emailTemplates EmailTemplate[]
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String
+  description String?
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model Site {
+  id             String   @id @default(cuid())
+  businessId     String
+  siteConfigJson Json
+  status         String   @default("draft")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  businessId      String
+  name            String
+  email           String?
+  phone           String?
+  message         String?
+  serviceInterest String?
+  sourcePage      String?
+  status          String   @default("new")
+  createdAt       DateTime @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model EmailTemplate {
+  id           String   @id @default(cuid())
+  businessId   String
+  templateType String
+  subject      String
+  body         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
