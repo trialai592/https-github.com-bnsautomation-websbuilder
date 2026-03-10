@@ -23,7 +23,8 @@ export default async function EmailsPage({ params }: EmailsPageProps) {
   }
 
   const leadTemplate = business.emailTemplates.find(
-    (template) => template.templateType === "lead_autoresponder"
+    (template: { templateType: string }) =>
+      template.templateType === "lead_autoresponder"
   )
 
   if (!leadTemplate) {

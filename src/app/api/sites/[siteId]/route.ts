@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
-import { Prisma } from "@prisma/client"
 import { z } from "zod"
+
+type SiteUpdateArgs = NonNullable<Parameters<typeof prisma.site.update>[0]>
+type SiteConfigJsonInput = NonNullable<
+  NonNullable<SiteUpdateArgs["data"]>["siteConfigJson"]
+>
 
 const updateSiteSchema = z.object({
   siteConfig: z.object({
@@ -57,7 +61,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     const updatedSite = await prisma.site.update({
       where: { id: siteId },
       data: {
-        siteConfigJson: parsed.siteConfig as unknown as Prisma.InputJsonValue
+        siteConfigJson: parsed.siteConfig as SiteConfigJsonInput
       }
     })
 

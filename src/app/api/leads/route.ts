@@ -44,7 +44,8 @@ export async function POST(req: Request) {
     })
 
     const savedTemplate = business.emailTemplates.find(
-      (template) => template.templateType === "lead_autoresponder"
+      (template: { templateType: string }) =>
+        template.templateType === "lead_autoresponder"
     )
 
     if (data.email) {

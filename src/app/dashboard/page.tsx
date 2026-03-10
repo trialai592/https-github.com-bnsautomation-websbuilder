@@ -2,6 +2,13 @@ import Link from "next/link"
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/db/prisma"
 
+type BusinessCard = {
+  id: string
+  name: string
+  industry: string
+  city: string
+}
+
 export default async function DashboardPage() {
   const { userId } = await auth()
 
@@ -43,7 +50,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {businesses.map((business) => (
+            {businesses.map((business: BusinessCard) => (
               <Link
                 key={business.id}
                 href={`/dashboard/businesses/${business.id}`}

@@ -1,9 +1,13 @@
 import { headers } from "next/headers"
 import { notFound } from "next/navigation"
-import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/db/prisma"
 import { renderSection } from "@/lib/render/section-registry"
 import { SiteConfig } from "@/types/site-config"
+
+type FindBusinessArgs = NonNullable<
+  Parameters<typeof prisma.business.findFirst>[0]
+>
+type BusinessWhereInput = NonNullable<FindBusinessArgs["where"]>
 
 export default async function TenantSitePage() {
   const headersList = await headers()
@@ -16,7 +20,7 @@ export default async function TenantSitePage() {
     .split(":")[0]
     .toLowerCase()
 
-  async function findBusiness(where: Prisma.BusinessWhereInput) {
+  async function findBusiness(where: BusinessWhereInput) {
     return prisma.business.findFirst({
       where,
       include: {
@@ -69,7 +73,9 @@ export default async function TenantSitePage() {
           ...section.data,
           businessId: business.id,
           sourcePage: `/site/${business.slug}`,
-          serviceOptions: business.services.map((service) => service.name)
+          serviceOptions: business.services.map(
+            (service: { name: string }) => service.name
+          )
         }
       }
     }

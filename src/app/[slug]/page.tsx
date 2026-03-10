@@ -40,7 +40,9 @@ export default async function SitePage({ params }: SitePageProps) {
           ...section.data,
           businessId: business.id,
           sourcePage: `/site/${business.slug}`,
-          serviceOptions: business.services.map((service) => service.name)
+          serviceOptions: business.services.map(
+            (service: { name: string }) => service.name
+          )
         }
       }
     }

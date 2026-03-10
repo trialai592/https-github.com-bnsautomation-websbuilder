@@ -8,6 +8,17 @@ type LeadsPageProps = {
   }>
 }
 
+type LeadRecord = {
+  id: string
+  name: string
+  email: string | null
+  phone: string | null
+  serviceInterest: string | null
+  message: string | null
+  status: string
+  createdAt: Date
+}
+
 export default async function LeadsPage({ params }: LeadsPageProps) {
   const { businessId } = await params
 
@@ -37,7 +48,7 @@ export default async function LeadsPage({ params }: LeadsPageProps) {
         </div>
 
         <LeadsTable
-          leads={business.leads.map((lead) => ({
+          leads={business.leads.map((lead: LeadRecord) => ({
             id: lead.id,
             name: lead.name,
             email: lead.email,
