@@ -83,6 +83,15 @@ export async function POST(request: NextRequest) {
       counter++;
     }
 
+    const baseSubdomain = slugify(data.name);
+    let subdomain = baseSubdomain;
+    counter = 1;
+
+    while (await prisma.business.findFirst({ where: { subdomain } })) {
+      subdomain = `${baseSubdomain}-${counter}`;
+      counter++;
+    }
+
     const business = await prisma.business.create({
       data: {
         ownerUserId: userId,
@@ -94,6 +103,7 @@ export async function POST(request: NextRequest) {
         phone: data.phone,
         tone: data.tone,
         slug,
+        subdomain,
         services: {
           create: data.services.map((service) => ({
             name: service.name,

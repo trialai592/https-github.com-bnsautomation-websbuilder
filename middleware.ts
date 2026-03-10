@@ -1,42 +1,59 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/api/private(.*)"
-])
+const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"])
+
+const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "yourapp.com"
+
+function getHostname(req: NextRequest) {
+  const host = req.headers.get("host") || ""
+  return host.split(":")[0].toLowerCase()
+}
 
 export default clerkMiddleware(async (auth, req) => {
+  const url = req.nextUrl
+  const hostname = getHostname(req)
+
   if (isProtectedRoute(req)) {
     await auth.protect()
+    return NextResponse.next()
   }
 
-  const hostHeader = req.headers.get("host") ?? ""
-  const hostname = hostHeader.split(":")[0].toLowerCase()
-  const pathname = req.nextUrl.pathname
+  const isAppDomain =
+    hostname === APP_DOMAIN ||
+    hostname === `www.${APP_DOMAIN}` ||
+    hostname.endsWith(`.${APP_DOMAIN}`)
 
-  const appHosts = new Set(
-    [
-      process.env.NEXT_PUBLIC_APP_URL,
-      process.env.VERCEL_URL
-    ]
-      .filter(Boolean)
-      .map((value) => value!.replace(/^https?:\/\//, "").split(":")[0].toLowerCase())
-  )
+  const isDashboard =
+    url.pathname.startsWith("/dashboard") ||
+    url.pathname.startsWith("/sign-in") ||
+    url.pathname.startsWith("/sign-up") ||
+    url.pathname.startsWith("/api")
 
-  appHosts.add("localhost")
-  appHosts.add("127.0.0.1")
-
-  const isAppHost = appHosts.has(hostname)
-
-  if (!isAppHost && pathname === "/") {
-    return NextResponse.rewrite(new URL("/site", req.url))
+  if (isDashboard) {
+    return NextResponse.next()
   }
+
+  if (hostname.endsWith(`.${APP_DOMAIN}`) && hostname !== APP_DOMAIN) {
+    const subdomain = hostname.replace(`.${APP_DOMAIN}`, "")
+    const rewriteUrl = url.clone()
+    rewriteUrl.pathname = `/tenant/${subdomain}${url.pathname}`
+    return NextResponse.rewrite(rewriteUrl)
+  }
+
+  if (!isAppDomain) {
+    const rewriteUrl = url.clone()
+    rewriteUrl.pathname = `/domain/${hostname}${url.pathname}`
+    return NextResponse.rewrite(rewriteUrl)
+  }
+
+  return NextResponse.next()
 })
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpg|jpeg|gif|png|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpg|jpeg|png|gif|svg|ico|woff2?|ttf)).*)",
     "/(api|trpc)(.*)"
   ]
 }

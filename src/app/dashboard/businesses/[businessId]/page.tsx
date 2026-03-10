@@ -94,6 +94,13 @@ export default async function BusinessDashboardPage({
           </Link>
 
           <Link
+            href={`/dashboard/businesses/${business.id}/domains`}
+            className="rounded-xl border bg-white p-5 font-medium text-gray-900 shadow-sm"
+          >
+            Manage Domains
+          </Link>
+
+          <Link
             href={`/site/${business.slug}`}
             className="rounded-xl border bg-white p-5 font-medium text-gray-900 shadow-sm"
           >
